@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Tareas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tarea {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Lista de Tareas</h1>
+
+        <div>
+            <input type="text" id="titulo" placeholder="Título de la tarea">
+            <input type="text" id="descripcion" placeholder="Descripción">
+            <button onclick="guardarTarea()">Guardar Tarea</button>
+        </div>
+
+        <div id="lista-tareas" style="margin-top: 20px;">
+            <!-- Las tareas aparecerán aquí -->
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANTE: Cuando despliegues el backend en Railway, cambia esta URL por la que te dé Railway.
+        // Mientras estés en local, usa la de localhost.
+        const BACKEND_URL = "https://ejemplo-tareas-backend-production.up.railway.app";
+
+        // Función para obtener tareas del backend
+        async function cargarTareas() {
+            try {
+                const respuesta = await fetch(`${BACKEND_URL}/tareas`);
+                const tareas = await respuesta.json();
+
+                const contenedor = document.getElementById('lista-tareas');
+                contenedor.innerHTML = ""; // Limpiar
+
+                tareas.forEach(tarea => {
+                    contenedor.innerHTML += `
+                    <div class="tarea">
+                        <strong>${tarea.titulo}</strong>
+                        <p style="margin: 5px 0;">${tarea.descripcion}</p>
+                    </div>
+                `;
+                });
+            } catch (error) {
+                console.error("Error conectando al backend:", error);
+            }
+        }
+
+        // Función para enviar una nueva tarea al backend
+        async function guardarTarea() {
+            const titulo = document.getElementById('titulo').value;
+            const descripcion = document.getElementById('descripcion').value;
+
+            if (!titulo) return alert("El título es obligatorio");
+
+            // Hacemos un POST a la ruta del backend
+            await fetch(`${BACKEND_URL}/tareas?titulo=${encodeURIComponent(titulo)}&descripcion=${encodeURIComponent(descripcion)}`, {
+                method: "POST"
+            });
+
+            // Limpiamos los campos y recargamos la lista
+            document.getElementById('titulo').value = '';
+            document.getElementById('descripcion').value = '';
+            cargarTareas();
+        }
+
+        // Cargar las tareas al iniciar la página
+        cargarTareas();
+    </script>
+
+</body>
+
+</html>
